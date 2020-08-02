@@ -1,0 +1,59 @@
+- name: Configuring Webserver using Docker
+  hosts: 192.168.127.129
+  tasks:
+          - name: Adding Docker repository
+            yum_repository:
+             name: Docker
+             description: Docker Repo
+
+             baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+             gpgcheck: no
+- name: Installing The Docker
+  hosts: 192.168.127.129
+  tasks:
+          - name: Installing the Docker
+            yum:
+                    name: docker-ce-18.09.1-3.el7.x86_64
+                    state: present
+- name: Starting The Service of Docker
+  hosts: 192.168.127.129
+  tasks:
+          - name: Starting service for Docker
+            service:
+                name: docker
+                state: started
+- name: Pulling a image
+  hosts: 192.168.127.129
+  tasks:
+          - name: pull
+            docker_image:
+                  name: httpd
+                  source: pull
+- name: Creating a folder in Node
+  hosts: 192.168.127.130
+  tasks:
+          - name: creating the folder
+            file:
+                    path: /root/locdir
+                    state: directory
+- name: Copying the HTML FILE
+  hosts: 192.168.127.129
+  tasks:
+          - name: copying the file
+            copy:
+                  src: "first.html"
+                  dest: "/root/locdir"
+- name: Create a data Container
+  hosts: 192.168.127.129
+  tasks:
+          - name: Create a Data Container
+            docker_container:
+                    name: Webserver
+                    image: httpd
+                    state: started
+                    exposed_ports:
+                            - "80"
+                    ports:
+                            - "9999:80"
+                    volumes:
+                            - /root/locdir/:/usr/local/apache2/htdocs/
